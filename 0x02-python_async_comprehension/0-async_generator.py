@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-''' Task Zero
+''' 
+    Task Zero
 '''
 from typing import Generator
 import random
