@@ -2,7 +2,7 @@
 ''' Task Zero
 '''
 from typing import Generator
-import asyncio
+import random
 import asyncio
 
 async def async_generator() -> Generator[float, None, None]:
