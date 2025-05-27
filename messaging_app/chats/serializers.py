@@ -2,6 +2,7 @@ from rest.framework import serializers
 from .models import User, Conversation, Message
 
 class UserSerializer(serializers.ModelSerializer):
+    phone_number = serializers.Charfield(required=False, allow_blank=True)
     class Meta:
         model = User
         fields = ['user_id', 'username', 'email', 'first_name', 'last_name', 'phone_number']
