@@ -49,6 +49,7 @@ class Message(models.Model):
      )
     message_body = models.TextField()
     sent_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"Message from {self.sender} at {self.sent_at}"
