@@ -1,2 +1,46 @@
-/venv
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+
+# Django
+*.log
+*.pot
+*.mo
+db.sqlite3
+media/
+staticfiles/
+
+# Migrations
+*/migrations/
+!*/migrations/__init__.py
+
+# Environment
+.env
+.env.*
+
+# Virtualenv
 venv/
+ENV/
+env/
+.venv/
+.Python
+
+# VSCode
+.vscode/
+
+# macOS
+.DS_Store
+
+# Linux
+*.swp
+
+# Others
+*.bak
+.idea/
+*.egg-info/
+coverage/
+htmlcov/
+*.sqlite3
