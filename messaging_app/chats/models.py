@@ -2,26 +2,21 @@ from django.db import models
 
 from django.contrib.auth.models import AbstractUser
 from django.conf import settings
+import uuid
 
-class CustomUser(AbstractUser):
-    """
-    Custom user model that extends the default Django user model.
-    """
-    # You can add additional fields here if needed
-    pass
-
-class Conversation(models.Model):
-    """
-    Multiple users can be part of a conversation.
-    """
-    partcipants = models.ManyToManyField(
-        settings.AUTH_USER_MODEL,
-        related_name='conversations',
-    )
-    created_at = models.DateTimeField(auto_now_add=True)
+class User(AbstractUser):
+    user_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    phone_number = models.CharField(max_length=20, blank=True, null=True)
 
     def __str__(self):
-        return f"Conversation {self.id}"
+        return f"{self.username} ({self.email})"
+
+class Conversation(models.Model):
+    conversation_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    participants = models.ManyToManyField(User, related_name='conversations')
+
+    def __str__(self):
+        return f"Conversation {self.conversation_id}"
     
 class Message(models.Model):
      """
