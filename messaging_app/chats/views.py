@@ -3,11 +3,12 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 from .models import Conversation, Message
 from .serializers import ConversationSerializer, MessageSerializer
+from rest_framework import IsAuthenticated
 
 class ConversationViewSet(viewsets.ModelViewSet):
     queryset = Conversation.objects.all()
     serializer_class = ConversationSerializer
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [IsAuthenticated]
 
     def create(self, request, *args, **kwargs):
         participants = request.data.get('participants', [])
@@ -18,11 +19,14 @@ class ConversationViewSet(viewsets.ModelViewSet):
         conversation.participants.set(participants)
         serializer = self.get_serializer(conversation)
         return Response(serializer.data, status=201)
+    
+    def get_queryset(self):
+        return Conversation.objects.filter(participants=self.request.user)
 
 class MessageViewSet(viewsets.ModelViewSet):
     queryset = Message.objects.all()
     serializer_class = MessageSerializer
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [IsAuthenticated]
     filter_backends = [filters.SearchFilter]
     search_fields = ['conversation_id']
 
@@ -30,3 +34,6 @@ class MessageViewSet(viewsets.ModelViewSet):
         sender = self.request.user
         sender = self.request.data.get('sender', sender)
         serializer.save(sender_id=sender)
+
+    def get_queryset(self):
+        return Message.objects.filter(sender=self.request.user)
