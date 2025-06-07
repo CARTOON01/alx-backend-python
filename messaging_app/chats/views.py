@@ -7,6 +7,7 @@ from .models import Conversation, Message
 from .serializers import ConversationSerializer, MessageSerializer
 from .permissions import IsParticipantOfConversation, IsMessageSender
 from .filters import MessageFilter
+from .pagination import StandardResultsSetPagination
 
 class ConversationViewSet(viewsets.ModelViewSet):
     serializer_class = ConversationSerializer
@@ -71,6 +72,7 @@ class MessageViewSet(viewsets.ModelViewSet):
     search_fields = ['message_body']
     ordering_fields = ['sent_at', 'created_at']
     ordering = ['-sent_at']  # Default ordering
+    pagination_class = StandardResultsSetPagination  # Use our custom pagination class
 
     def get_queryset(self):
         conversation_id = self.kwargs.get('conversation_pk')
