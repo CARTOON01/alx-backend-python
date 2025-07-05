@@ -11,7 +11,7 @@ pipeline {
                 git credentialsId: 'github-credentials',
                     url: 'https://github.com/CARTOON01/alx-backend-python.git',
                     branch: 'main'
-                sh 'git branch'
+                sh 'git branch' 
             }
         }
 
@@ -22,7 +22,7 @@ pipeline {
                     python3 -m venv venv
                     . venv/bin/activate
                     pip3 install --upgrade pip
-                    pip3 install -r messaging_app/requirements.txt
+                    pip3 install -r requirements.txt 
                     '''
                 }
             }
