@@ -1,0 +1,54 @@
+pipeline {
+    agent any
+
+    environment {
+        VENV_DIR = 'venv'
+        APP_DIR = 'messaging_app' // Relative to Jenkinsfile location
+    }
+
+    stages {
+        stage('Clone Repository') {
+            steps {
+                git credentialsId: 'github-credentials',
+                    url: 'https://github.com/CARTOON01/alx-backend-python.git',
+                    branch: 'main'
+            }
+        }
+
+        stage('Set Up Python Environment') {
+            steps {
+                dir("messaging_app") {
+                    sh '''
+                    python3 -m venv venv
+                    . venv/bin/activate
+                    pip install --upgrade pip
+                    pip install -r requirements.txt
+                    '''
+                }
+            }
+        }
+
+        stage('Run Tests') {
+            steps {
+                dir("messaging_app") {
+                    sh '''
+                    . venv/bin/activate
+                    pytest --junitxml=report.xml || true
+                    '''
+                }
+            }
+        }
+
+        stage('Publish Test Report') {
+            steps {
+                junit 'messaging_app/report.xml'
+            }
+        }
+    }
+
+    post {
+        always {
+            echo 'Pipeline finished.'
+        }
+    }
+}
