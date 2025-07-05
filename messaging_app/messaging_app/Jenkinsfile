@@ -3,7 +3,6 @@ pipeline {
 
     environment {
         VENV_DIR = 'venv'
-        APP_DIR = 'messaging_app' // Relative to Jenkinsfile location
     }
 
     stages {
@@ -12,6 +11,7 @@ pipeline {
                 git credentialsId: 'github-credentials',
                     url: 'https://github.com/CARTOON01/alx-backend-python.git',
                     branch: 'main'
+                sh 'git branch'
             }
         }
 
@@ -21,8 +21,8 @@ pipeline {
                     sh '''
                     python3 -m venv venv
                     . venv/bin/activate
-                    pip install --upgrade pip
-                    pip install -r requirements.txt
+                    pip3 install --upgrade pip
+                    pip3 install -r messaging_app/requirements.txt
                     '''
                 }
             }
