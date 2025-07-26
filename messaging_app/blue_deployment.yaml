@@ -1,0 +1,105 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: messaging-app-blue-deployment
+  namespace: default
+  labels:
+    app: messaging-app
+    version: blue
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: messaging-app
+      version: blue
+  template:
+    metadata:
+      labels:
+        app: messaging-app
+        version: blue
+    spec:
+      containers:
+      - name: messaging-app
+        image: messaging-app:latest
+        ports:
+        - containerPort: 8000
+        env:
+        - name: DJANGO_SETTINGS_MODULE
+          valueFrom:
+            configMapKeyRef:
+              name: messaging-app-config
+              key: DJANGO_SETTINGS_MODULE
+        - name: SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: messaging-app-secret
+              key: SECRET_KEY
+        - name: DEBUG
+          valueFrom:
+            configMapKeyRef:
+              name: messaging-app-config
+              key: DEBUG
+        - name: ALLOWED_HOSTS
+          valueFrom:
+            configMapKeyRef:
+              name: messaging-app-config
+              key: ALLOWED_HOSTS
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /api/
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /api/
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+      restartPolicy: Always
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: messaging-app-service
+  namespace: default
+  labels:
+    app: messaging-app
+spec:
+  type: ClusterIP
+  ports:
+  - port: 8000
+    targetPort: 8000
+    protocol: TCP
+    name: http
+  selector:
+    app: messaging-app
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: messaging-app-config
+  namespace: default
+data:
+  DJANGO_SETTINGS_MODULE: "messaging_app.settings"
+  DEBUG: "False"
+  ALLOWED_HOSTS: "*"
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: messaging-app-secret
+  namespace: default
+type: Opaque
+data:
+  SECRET_KEY: ZGphbmdvLWluc2VjdXJlLWs4cy1kZXBsb3ltZW50LXNlY3JldC1rZXktY2hhbmdlLWluLXByb2R1Y3Rpb24=

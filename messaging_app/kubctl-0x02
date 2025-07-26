@@ -1,0 +1,24 @@
+#!/bin/bash
+
+set -e
+
+echo "Applying blue deployment..."
+kubectl apply -f blue_deployment.yaml
+
+echo "Applying green deployment..."
+kubectl apply -f green_deployment.yaml
+
+echo "Applying service (traffic to blue by default)..."
+kubectl apply -f kubeservice.yaml
+
+echo "Waiting for pods to be ready..."
+kubectl rollout status deployment/messaging-app-blue-deployment
+kubectl rollout status deployment/messaging-app-green-deployment
+
+echo "Checking logs for blue deployment:"
+kubectl logs -l app=messaging-app,version=blue --tail=20
+
+echo "Checking logs for green deployment:"
+kubectl logs -l app=messaging-app,version=green --tail=20
+
+echo "To switch traffic to green, edit kubeservice.yaml selector to 'version: green' and re-apply."
