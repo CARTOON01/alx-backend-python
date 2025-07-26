@@ -1,0 +1,38 @@
+#!/bin/bash
+
+set -e
+
+GREEN='\033[0;32m'
+BLUE='\033[0;34m'
+RED='\033[0;31m'
+NC='\033[0m'
+
+echo -e "${BLUE}Scaling deployment to 3 replicas...${NC}"
+kubectl scale deployment messaging-app-deployment --replicas=3
+
+echo -e "${BLUE}Waiting for pods to be ready...${NC}"
+kubectl wait --for=condition=ready pod -l app=messaging-app --timeout=120s
+
+echo -e "${GREEN}Current pods:${NC}"
+kubectl get pods -l app=messaging-app
+
+echo -e "${BLUE}Starting port-forward in background...${NC}"
+kubectl port-forward service/messaging-app-service 8000:8000 > /dev/null 2>&1 &
+PF_PID=$!
+sleep 5
+
+if command -v wrk &> /dev/null; then
+    echo -e "${BLUE}Running wrk load test (10s, 4 threads, 20 connections)...${NC}"
+    wrk -t4 -c20 -d10s http://localhost:8000/api/ || echo -e "${RED}wrk test failed${NC}"
+else
+    echo -e "${RED}wrk not installed. Skipping load test.${NC}"
+fi
+
+kill $PF_PID 2>/dev/null || true
+
+echo -e "${GREEN}Resource usage:${NC}"
+if kubectl top pods &> /dev/null; then
+    kubectl top pods -l app=messaging-app
+else
+    echo -e "${RED}kubectl top not available (metrics-server may not be installed).${NC}"
+fi

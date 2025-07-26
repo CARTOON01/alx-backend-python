@@ -29,7 +29,6 @@ print_error() {
     echo -e "${RED}[ERROR]${NC} $1"
 }
 
-# Function to check if kubectl is available
 check_kubectl() {
     if ! command -v kubectl &> /dev/null; then
         print_error "kubectl is not installed or not in PATH"
@@ -38,7 +37,6 @@ check_kubectl() {
     print_success "kubectl is available"
 }
 
-# Function to check if cluster is accessible
 check_cluster() {
     print_status "Checking Kubernetes cluster connectivity..."
     if kubectl cluster-info &> /dev/null; then
