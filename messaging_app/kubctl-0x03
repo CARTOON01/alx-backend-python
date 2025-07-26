@@ -1,0 +1,44 @@
+#!/bin/bash
+
+set -e
+
+DEPLOYMENT_FILE="blue_deployment.yaml"
+SERVICE_NAME="messaging-app-service"
+NAMESPACE="default"
+PORT=8000
+PATH="/api/"
+
+echo "Applying deployment..."
+kubectl apply -f "$DEPLOYMENT_FILE"
+
+echo "Starting rollout status monitoring..."
+kubectl rollout status deployment/messaging-app-blue-deployment -n "$NAMESPACE" &
+
+ROLL_PID=$!
+
+echo "Probing service for downtime..."
+for i in {1..60}; do
+    CLUSTER_IP=$(kubectl get svc $SERVICE_NAME -n $NAMESPACE -o jsonpath='{.spec.clusterIP}')
+    if [ -z "$CLUSTER_IP" ]; then
+        echo "Service not found, retrying..."
+        sleep 1
+        continue
+    fi
+    HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 2 "http://$CLUSTER_IP:$PORT$PATH")
+    if [ "$HTTP_CODE" -ne 200 ]; then
+        echo "[$(date)] Downtime detected! HTTP $HTTP_CODE"
+    else
+        echo "[$(date)] Service OK"
+    fi
+    sleep 1
+done &
+
+PROBE_PID=$!
+
+wait $ROLL_PID
+
+echo "Rollout finished. Waiting for probe to complete..."
+wait $PROBE_PID
+
+echo "Current pods:"
+kubectl get pods -l app=messaging-app -n "$NAMESPACE"
